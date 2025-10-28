@@ -1,63 +1,90 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StudentInFormation;
+using StudentApi.Data;
 using System.Collections.Generic;
+using StudentInFormation;
 
 namespace StudentApi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class StudentsController : ControllerBase
     {
-        private readonly StudentsRepository repo = new StudentsRepository();
+        private readonly StudentsRepository _repo;
 
-        // GET: api/students
-        [HttpGet]
-        public ActionResult<List<StudentInfo>> GetAll()
+        public StudentsController()
         {
-            return Ok(repo.GetStudents());
+            _repo = new StudentsRepository();
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<StudentInfo>> GetAll()
+        {
+            return Ok(_repo.GetStudents());
         }
 
         [HttpGet("{id}")]
         public ActionResult<StudentInfo> GetById(int id)
         {
-            var student = repo.GetStudentByID(id);
-            if (student == null) return NotFound();
+            var student = _repo.GetStudentById(id);
+            if (student == null)
+                return NotFound();
             return Ok(student);
         }
 
-      [HttpPost]
-        public ActionResult Add([FromBody] StudentInfo student)
+        [HttpPost]
+        public ActionResult<StudentInfo> Create(StudentInfo student)
         {
-            repo.AddStudent(student);
-            return Ok();
+            // Auto-generate ID
+            var all = _repo.GetStudents();
+            student.Id = all.Count > 0 ? all[^1].Id + 1 : 1;
+            _repo.AddStudent(student);
+            return CreatedAtAction(nameof(GetById), new { id = student.Id }, student);
         }
 
-        
         [HttpPut("{id}")]
-        public ActionResult Update(int id, [FromBody] StudentInfo student)
+        public IActionResult Update(int id, StudentInfo updated)
         {
-            student.id = id;
-            var updated = repo.UpdateStudent(student);
-            if (!updated) return NotFound();
-            return Ok();
+            var existing = _repo.GetStudentById(id);
+            if (existing == null)
+                return NotFound();
+
+            updated.Id = id;
+            _repo.UpdateStudent(updated);
+            return NoContent();
         }
 
-       
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public IActionResult Delete(int id)
         {
-            var deleted = repo.DeleteStudent(id);
-            if (!deleted) return NotFound();
-            return Ok();
+            var deleted = _repo.DeleteStudent(id);
+            if (!deleted)
+                return NotFound();
+            return NoContent();
         }
 
-       
-        [HttpGet("search")]
-        public ActionResult<List<StudentInfo>> Search(string name)
+        // 🔍 SEARCH ENDPOINTS
+
+        [HttpGet("search/name/{name}")]
+        public ActionResult<IEnumerable<StudentInfo>> SearchByName(string name)
         {
-            var results = repo.SearchStudentsByName(name);
-            if (results.Count == 0) return NotFound();
+            var results = _repo.SearchByName(name);
             return Ok(results);
+        }
+
+        [HttpGet("search/rollno/{rollno}")]
+        public ActionResult<StudentInfo> SearchByRollNo(int rollno)
+        {
+            var result = _repo.SearchByRollNo(rollno);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpGet("search/mobile/{mobile}")]
+        public ActionResult<StudentInfo> SearchByMobile(long mobile)
+        {
+            var result = _repo.SearchByMobile(mobile);
+            if (result == null) return NotFound();
+            return Ok(result);
         }
     }
 }

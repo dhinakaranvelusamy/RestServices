@@ -33,12 +33,12 @@ namespace JasonLibrary
         // UPDATE
         public bool UpdateJason(int rollno, string newname, int newage, long newmobile)
         {
-            var student = Info.FirstOrDefault(x => x.RollNumber == rollno);
+            var student = Info.FirstOrDefault(x => x.RollNo == rollno);
             if (student != null)
             {
                 student.Name = newname;
-                student.age = newage;
-                student.MobileNumber = newmobile;
+                student.Age = newage;
+                student.MobileNo = newmobile;
                 SaveData();
                 return true;
             }
@@ -48,7 +48,7 @@ namespace JasonLibrary
         // DELETE
         public bool DeleteJason(int rollno)
         {
-            var student = Info.FirstOrDefault(x => x.RollNumber == rollno);
+            var student = Info.FirstOrDefault(x => x.RollNo == rollno);
             if (student != null)
             {
                 Info.Remove(student);
@@ -67,13 +67,13 @@ namespace JasonLibrary
         // SEARCH: ROLL NUMBER
         public StudentInfo SearchByRollNo(int rollno)
         {
-            return Info.FirstOrDefault(x => x.RollNumber == rollno);
+            return Info.FirstOrDefault(x => x.RollNo == rollno);
         }
 
         // SEARCH: MOBILE
         public StudentInfo SearchByMobile(long mobile)
         {
-            return Info.FirstOrDefault(x => x.MobileNumber == mobile);
+            return Info.FirstOrDefault(x => x.MobileNo == mobile);
         }
 
         // JSON FILE OPERATIONS
